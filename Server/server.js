@@ -1,9 +1,7 @@
-import dotenv from "dotenv";
+import "dotenv/config"; // load environment variables
 
 import http from "http";
 import app from "./app.js";
-
-dotenv.config(); // load environment variables
 
 const server = http.createServer(app); // create a server
 

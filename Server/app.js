@@ -1,5 +1,8 @@
 import express from 'express';
 import morgan from 'morgan';
+import dbConnect from './db/db.js';
+
+dbConnect(); // connect to the database
 
 const app = express(); 
 
