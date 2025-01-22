@@ -8,7 +8,7 @@ async function dbConnect() {
         );
 
         console.log(
-            `Connected to the database: ${isConnected.connection.host}/${isConnected.connection.name}`
+            `Connected to the database: ${isConnected.connection.name}`
         );
     } catch (error) {
         console.log("Failed to connect to the database", error);

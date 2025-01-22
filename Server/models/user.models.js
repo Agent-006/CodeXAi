@@ -33,6 +33,6 @@ userSchema.methods.generateJWT = function () {
     return jwt.sign({ email: this.email }, process.env.JWT_SECRET);
 }
 
-const User = mongoose.model("user", userSchema);
+const user = mongoose.model("users", userSchema);
 
-export default User;
+export default user;
