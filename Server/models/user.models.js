@@ -1,25 +1,27 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const userSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true,
-        minLength: [6, "Email must be at least 6 characters long"],
-        maxLength: [50, "Email must be at most 50 characters long"]
-    },
+const userSchema = new Schema(
+    {
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            lowercase: true,
+            minLength: [6, "Email must be at least 6 characters long"],
+            maxLength: [50, "Email must be at most 50 characters long"]
+        },
 
-    password: {
-        type: String,
-        required: true,
-        minLength: [6, "Password must be at least 6 characters long"],
-        select: false
+        password: {
+            type: String,
+            required: true,
+            minLength: [6, "Password must be at least 6 characters long"],
+            select: false
+        }
     }
-});
+);
 
 userSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
@@ -30,9 +32,14 @@ userSchema.methods.isValidPassword = async function (password) {
 }
 
 userSchema.methods.generateJWT = function () {
-    return jwt.sign({ email: this.email }, process.env.JWT_SECRET);
-}
+    return jwt.sign(
+        { 
+            email: this.email 
+        }, 
+        process.env.JWT_SECRET
+    );
+};
 
-const user = mongoose.model("users", userSchema);
+const User = mongoose.model("User", userSchema);
 
-export default user;
+export default User;

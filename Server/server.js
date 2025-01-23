@@ -1,4 +1,4 @@
-import "dotenv/config"; // load environment variables
+import "dotenv/config.js"; // load environment variables
 
 import http from "http";
 import app from "./app.js";
