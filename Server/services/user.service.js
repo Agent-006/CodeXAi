@@ -1,19 +1,39 @@
-import userModel from "../models/user.models.js";
+import User from "../models/user.models.js";
 
-export const createUser = async ({ 
-    email, 
-    password 
-}) => {
+// Create a new user
+export const createUser = async ({ email, password }) => {
     if (!email || !password) {
         throw new Error("Email and password are required");
     }
 
-    const hashedPassword = await userModel.hashPassword(password);
+    const hashedPassword = await User.hashPassword(password);
 
-    const user = await userModel.create({
+    const user = await User.create({
         email,
         password: hashedPassword,
     });
+
+    return user;
+};
+
+// Login a user
+export const loginUser = async ({ email, password }) => {
+    if (!email || !password) {
+        throw new Error("Email and password are required");
+    }
+
+    const user = await User.findOne({
+        email,
+    }).select("+password");
+
+    if (!user) {
+        throw new Error("User not found or password is incorrect");
+    }
+    const isPasswordMatch = await user.isValidPassword(password);
+
+    if (!isPasswordMatch) {
+        throw new Error("User not found or password is incorrect");
+    }
 
     return user;
 };
