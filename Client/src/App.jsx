@@ -1,9 +1,11 @@
+import SplashCursor from "./blocks/Animations/SplashCursor/SplashCursor";
+import AppRoutes from "./routes/AppRoutes";
+
 function App() {
     return (
         <>
-            <div className="h-screen flex flex-col justify-center items-center bg-gray-950 text-gray-300">
-                Hellow !
-            </div>
+            <AppRoutes />
+            <SplashCursor />
         </>
     );
 }
