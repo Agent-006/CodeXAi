@@ -18,7 +18,7 @@ export const createUserController = async (req, res) => {
 
         const token = await user.generateJWT();
 
-        res.status(201).json({
+        res.status(200).json({
             user,
             token,
         });

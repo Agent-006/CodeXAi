@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "../config/axios";
 
 const Login = () => {
     const [data, setData] = useState({
@@ -6,13 +8,30 @@ const Login = () => {
         password: "",
     });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(data);
-        setData({
-            email: "",
-            password: "",
-        });
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        try {
+            e.preventDefault();
+
+            const res = await axios.post("/api/users/login", {
+                email: data.email,
+                password: data.password,
+            });
+
+            if (res.status === 200) {
+                console.log(res.data);
+                navigate("/");
+            }
+
+            setData({
+                email: "",
+                password: "",
+            });
+        } catch (error) {
+            console.error("Error: ", error.response?.data || error.message);
+            // TODO: show error popup
+        }
     };
 
     return (
@@ -49,10 +68,13 @@ const Login = () => {
                         <div className="text-sm">
                             Do not have an account?
                             <span>
-                                <a href="/register" className="text-blue-500">
+                                <Link
+                                    href="/register"
+                                    className="text-blue-500"
+                                >
                                     {" "}
                                     Register
-                                </a>
+                                </Link>
                             </span>
                         </div>
                     </div>

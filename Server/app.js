@@ -3,10 +3,13 @@ import morgan from "morgan";
 import dbConnect from "./db/db.js";
 import userRoutes from "./routes/user.route.js";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 
 dbConnect(); // connect to the database
 
 const app = express();
+
+app.use(cors());
 
 app.use(morgan("dev")); // log requests to the console
 

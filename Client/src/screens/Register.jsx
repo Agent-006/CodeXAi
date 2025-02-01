@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "../config/axios";
 
 const Register = () => {
     const [data, setData] = useState({
@@ -6,13 +8,30 @@ const Register = () => {
         password: "",
     });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log(data);
-        setData({
-            email: "",
-            password: "",
-        });
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        try {
+            e.preventDefault();
+
+            const res = await axios.post("/api/users/register", {
+                email: data.email,
+                password: data.password,
+            });
+
+            if (res.status === 200) {
+                console.log(res.data);
+                navigate("/");
+            }
+
+            setData({
+                email: "",
+                password: "",
+            });
+        } catch (error) {
+            console.error("Error: ", error.response?.data || error.message);
+            // TODO: show error popup
+        }
     };
 
     return (
@@ -27,7 +46,10 @@ const Register = () => {
                             <input
                                 value={data.email}
                                 onChange={(e) =>
-                                    setData({ ...data, email: e.target.value })
+                                    setData({
+                                        ...data,
+                                        email: e.target.value,
+                                    })
                                 }
                                 className="w-full border-[1px] border-zinc-800 px-3 py-2 rounded text-zinc-200 outline-none"
                                 type="text"
@@ -49,10 +71,10 @@ const Register = () => {
                         <div className="text-sm">
                             Already have an account?
                             <span>
-                                <a href="/login" className="text-blue-500">
+                                <Link href="/login" className="text-blue-500">
                                     {" "}
                                     Login
-                                </a>
+                                </Link>
                             </span>
                         </div>
                     </div>
