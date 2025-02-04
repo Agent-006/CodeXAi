@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../config/axios";
+import { useContext } from "react";
+import { UserContext } from "../context/user.context";
 
 const Login = () => {
     const [data, setData] = useState({
         email: "",
         password: "",
     });
+
+    const { setUser } = useContext(UserContext);
 
     const navigate = useNavigate();
 
@@ -21,7 +25,11 @@ const Login = () => {
 
             if (res.status === 200) {
                 console.log(res.data);
-                navigate("/");
+
+                localStorage.setItem("token", res.data.token);
+                setUser(res.data.user);
+
+                navigate("/profile");
             }
 
             setData({
@@ -33,6 +41,8 @@ const Login = () => {
             // TODO: show error popup
         }
     };
+
+    // TODO: Change the ui
 
     return (
         <div className="h-screen flex justify-center items-center bg-zinc-950 text-zinc-200 ">
@@ -48,7 +58,7 @@ const Login = () => {
                                 onChange={(e) =>
                                     setData({ ...data, email: e.target.value })
                                 }
-                                className="w-full border-[1px] border-zinc-800 px-3 py-2 rounded text-zinc-200 outline-none"
+                                className="w-full border-[1px] border-zinc-800 px-3 py-2 rounded text-zinc-200 outline-none bg-transparent"
                                 type="text"
                                 placeholder="Email"
                             />
@@ -60,7 +70,7 @@ const Login = () => {
                                         password: e.target.value,
                                     })
                                 }
-                                className="w-full border-[1px] border-zinc-800 px-3 py-2 rounded text-zinc-200 outline-none"
+                                className="w-full border-[1px] border-zinc-800 px-3 py-2 rounded text-zinc-200 outline-none bg-transparent"
                                 type="password"
                                 placeholder="Password"
                             />
@@ -68,10 +78,7 @@ const Login = () => {
                         <div className="text-sm">
                             Do not have an account?
                             <span>
-                                <Link
-                                    href="/register"
-                                    className="text-blue-500"
-                                >
+                                <Link to="/register" className="text-blue-500">
                                     {" "}
                                     Register
                                 </Link>

@@ -13,6 +13,8 @@ export const createUser = async ({ email, password }) => {
         password: hashedPassword,
     });
 
+    delete user._doc.password;
+
     return user;
 };
 
@@ -35,5 +37,7 @@ export const loginUser = async ({ email, password }) => {
         throw new Error("User not found or password is incorrect");
     }
 
+    delete user._doc.password;
+    
     return user;
 };
