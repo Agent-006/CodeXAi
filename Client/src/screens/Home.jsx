@@ -1,7 +1,6 @@
-// import SplashCursor from "../blocks/Animations/SplashCursor/SplashCursor";
-
 import { useNavigate } from "react-router-dom";
 import { Vortex } from "../components/ui/votex";
+import { RainbowButton } from "../components/ui/RainbowButton";
 
 const Home = () => {
     const navigate = useNavigate();
@@ -27,12 +26,9 @@ const Home = () => {
                     to code, chat, and innovate together.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                    <button
-                        onClick={handleClick}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 transition duration-200 rounded-lg text-white shadow-[0px_2px_0px_0px_#FFFFFF40_inset]"
-                    >
-                        Get started
-                    </button>
+                    <RainbowButton onClick={handleClick}>
+                        Get Started
+                    </RainbowButton>
                 </div>
             </Vortex>
         </div>
