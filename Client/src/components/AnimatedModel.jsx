@@ -30,7 +30,7 @@ export function AnimatedModal() {
     };
 
     return (
-        <div className="py-40 flex items-center justify-center">
+        <div className="flex items-center justify-center">
             <Modal className="text-white">
                 <ModalTrigger className="bg-zinc-950 border border-zinc-600 antialiased font-semibold text-white flex justify-center group/modal-btn">
                     <span className="group-hover/modal-btn:translate-x-40 text-center transition duration-500 flex gap-2 items-center justify-center p-1">
