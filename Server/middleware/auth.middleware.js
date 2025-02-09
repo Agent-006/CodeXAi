@@ -13,7 +13,6 @@ export const authUser = async (req, res, next) => {
         }
 
         const isBlackListed = await redisClient.get(token);
-        console.log(isBlackListed);
 
         if (isBlackListed) {
             res.cookie("token", "");

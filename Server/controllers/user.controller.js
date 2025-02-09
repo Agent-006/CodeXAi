@@ -18,8 +18,6 @@ export const createUserController = async (req, res) => {
 
         const token = await user.generateJWT();
 
-        
-
         res.status(200).json({
             user,
             token,
@@ -80,11 +78,16 @@ export const logoutUserController = async (req, res) => {
         res.status(200).json({
             message: "User logged out successfully",
         });
-
     } catch (error) {
         console.log(error);
         res.status(500).json({
             message: error.message,
         });
     }
+};
+
+// Get all users
+
+export const getAllUsersController = async (req, res) => {
+    // TODO: Implement functionality to get all users
 };

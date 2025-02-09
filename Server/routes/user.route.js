@@ -1,7 +1,13 @@
 import { Router } from "express";
-import * as userController from "../controllers/user.controller.js";
+import {
+    createUserController,
+    getAllUsersController,
+    getUserProfileController,
+    loginUserController,
+    logoutUserController,
+} from "../controllers/user.controller.js";
 import { body } from "express-validator";
-import * as authMiddleware from "../middleware/auth.middleware.js";
+import { authUser } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
@@ -13,7 +19,7 @@ router.post(
     body("password")
         .isLength({ min: 3 })
         .withMessage("Password must be at least 3 characters long"),
-    userController.createUserController
+    createUserController
 );
 
 // POST /api/user/login
@@ -24,22 +30,17 @@ router.post(
     body("password")
         .isLength({ min: 3 })
         .withMessage("Password must be at least 3 characters long"),
-    userController.loginUserController
+    loginUserController
 );
 
 // GET /api/user/:id
 // Get a user profile
 
-router.get(
-    "/profile",
-    authMiddleware.authUser,
-    userController.getUserProfileController
-);
+router.get("/profile", authUser, getUserProfileController);
 
-router.get(
-    "/logout",
-    authMiddleware.authUser,
-    userController.logoutUserController
-);
+router.get("/logout", authUser, logoutUserController);
+
+// get all users
+router.get("/all", authUser, getAllUsersController);
 
 export default router;
