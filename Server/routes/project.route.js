@@ -4,6 +4,7 @@ import {
     addUserToProjectController,
     createProjectController,
     getAllUserProjectsController,
+    getProjectByIdController,
 } from "../controllers/project.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
@@ -32,5 +33,10 @@ router.put(
         .withMessage("Users must be an array of strings"),
     addUserToProjectController
 );
+
+router.get("/get-project/:projectId",
+    authUser,
+    getProjectByIdController
+)
 
 export default router;

@@ -30,7 +30,8 @@ export const createUserController = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            error: error.message || "Something went wrong",
+            error:
+                error.message || "Something went wrong while creating a user",
         });
     }
 };
@@ -64,7 +65,8 @@ export const loginUserController = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            error: error.message || "Something went wrong",
+            error:
+                error.message || "Something went wrong while logging in a user",
         });
     }
 };
@@ -78,7 +80,9 @@ export const getUserProfileController = async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({
-            error: error.message || "Something went wrong",
+            error:
+                error.message ||
+                "Something went wrong while fetching user profile",
         });
     }
 };
@@ -98,7 +102,9 @@ export const logoutUserController = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            error: error.message || "Something went wrong",
+            error:
+                error.message ||
+                "Something went wrong while logging out a user",
         });
     }
 };
@@ -144,7 +150,9 @@ export const getAllUsersController = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            error: error.message || "Something went wrong",
+            error:
+                error.message ||
+                "Something went wrong while fetching all users",
         });
     }
 };

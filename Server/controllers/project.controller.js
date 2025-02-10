@@ -3,6 +3,7 @@ import User from "../models/user.models.js";
 import {
     addUserToProject,
     createProject,
+    getProjectById,
     getProjectsByUserId,
 } from "../services/project.service.js";
 
@@ -32,7 +33,7 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message,
+            error: error.message || "Some error occurred while creating the project",
         });
     }
 };
@@ -54,7 +55,7 @@ export const getAllUserProjectsController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message,
+            error: error.message || "Some error occurred while fetching projects",
         });
     }
 };
@@ -96,7 +97,40 @@ export const addUserToProjectController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message,
+            error: error.message || "Some error occurred while adding user to project",
+        });
+    }
+};
+
+// get project by id
+
+export const getProjectByIdController = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+
+        if (!projectId) {
+            return res.status(400).json({
+                message: "Project ID is required",
+            });
+        }
+
+        const project = await getProjectById({ projectId });
+
+        if (!project) {
+            return res.status(404).json({
+                message: "Project not found",
+            });
+        }
+
+        return res.status(200).json({
+            project,
+            message: "Project fetched successfully",
+        });
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send({
+            error:
+                error.message || "Some error occurred while fetching the project",
         });
     }
 };
