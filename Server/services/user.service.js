@@ -38,6 +38,22 @@ export const loginUser = async ({ email, password }) => {
     }
 
     delete user._doc.password;
-    
+
     return user;
+};
+
+// Get all users
+
+export const getAllUsers = async ({ userId }) => {
+    const users = await User.find({
+        _id: {
+            $ne: userId,
+        },
+    }).select("-password");
+
+    if (!users) {
+        throw new Error("No users found");
+    }
+
+    return users;
 };

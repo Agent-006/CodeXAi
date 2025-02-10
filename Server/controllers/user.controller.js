@@ -1,6 +1,11 @@
-import * as userService from "../services/user.service.js";
+import {
+    createUser,
+    getAllUsers,
+    loginUser,
+} from "../services/user.service.js";
 import { validationResult } from "express-validator";
 import redisClient from "../services/redis.service.js";
+import User from "../models/user.models.js";
 
 // Create a new user
 
@@ -14,7 +19,7 @@ export const createUserController = async (req, res) => {
     }
 
     try {
-        const user = await userService.createUser(req.body);
+        const user = await createUser(req.body);
 
         const token = await user.generateJWT();
 
@@ -23,7 +28,10 @@ export const createUserController = async (req, res) => {
             token,
         });
     } catch (error) {
-        res.status(500).send(error.message);
+        console.log(error);
+        return res.status(500).json({
+            error: error.message || "Something went wrong",
+        });
     }
 };
 
@@ -39,7 +47,7 @@ export const loginUserController = async (req, res) => {
     }
 
     try {
-        const user = await userService.loginUser(req.body);
+        const user = await loginUser(req.body);
 
         if (!user) {
             return res.status(404).json({
@@ -54,16 +62,25 @@ export const loginUserController = async (req, res) => {
             token,
         });
     } catch (error) {
-        res.status(500).send(error.message);
+        console.log(error);
+        return res.status(500).json({
+            error: error.message || "Something went wrong",
+        });
     }
 };
 
 // Get a user profile
 
 export const getUserProfileController = async (req, res) => {
-    return res.status(200).json({
-        user: req.user,
-    });
+    try {
+        return res.status(200).json({
+            user: req.user,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message || "Something went wrong",
+        });
+    }
 };
 
 // Logout a user
@@ -80,8 +97,8 @@ export const logoutUserController = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({
-            message: error.message,
+        return res.status(500).json({
+            error: error.message || "Something went wrong",
         });
     }
 };
@@ -89,5 +106,45 @@ export const logoutUserController = async (req, res) => {
 // Get all users
 
 export const getAllUsersController = async (req, res) => {
-    // TODO: Implement functionality to get all users
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                error: "Email is required",
+            });
+        }
+
+        const loggedInUser = await User.findOne({
+            email,
+        });
+
+        if (!loggedInUser) {
+            return res.status(401).json({
+                error: "User not found",
+            });
+        }
+
+        const userId = loggedInUser._id;
+
+        const users = await getAllUsers({
+            userId,
+        });
+
+        if (!users) {
+            return res.status(404).json({
+                error: "No users found",
+            });
+        }
+
+        return res.status(200).json({
+            users,
+            message: "All users fetched successfully",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            error: error.message || "Something went wrong",
+        });
+    }
 };
