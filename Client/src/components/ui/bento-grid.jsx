@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
+import { RiGroupLine } from "@remixicon/react";
 import { cn } from "../../lib/utils";
 
 export const BentoGrid = ({ className, children }) => {
     return (
         <div
             className={cn(
-                "grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto ",
+                "grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl w-full mx-auto p-4",
                 className
             )}
         >
@@ -14,28 +15,30 @@ export const BentoGrid = ({ className, children }) => {
     );
 };
 
-export const BentoGridItem = ({
-    className,
-    title,
-    description,
-    header,
-    icon,
-}) => {
+export const BentoGridItem = ({ className, title, description, userCount }) => {
     return (
         <div
             className={cn(
-                "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 bg-zinc-950 border border-zinc-400 justify-between flex flex-col space-y-4",
+                "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-6 bg-opacity-50 bg-clip-padding backdrop-filter backdrop-blur-lg bg-zinc-950/40 border border-zinc-500 flex flex-col space-y-4 cursor-pointer",
                 className
             )}
         >
-            {header}
-            <div className="group-hover/bento:translate-x-2 transition duration-200">
-                {icon}
-                <div className="font-sans font-bold text-zinc-100  mb-2 mt-2">
-                    {title}
+            <div className="group-hover/bento:translate-x-2 transition duration-200 h-full w-full flex flex-col justify-between items-start">
+                <div className="flex flex-col space-y-2">
+                    <h1 className="font-sans font-bold text-zinc-100 text-2xl mb-2 mt-2">
+                        {title}
+                    </h1>
+                    <p className="font-sans font-normal text-zinc-300 text-md mb-4">
+                        {description}
+                    </p>
                 </div>
-                <div className="font-sans font-normal text-zinc-300 text-xs ">
-                    {description}
+                <div className="flex items-center justify-start space-x-2">
+                    <div className="text-xl text-emerald-500">
+                        <RiGroupLine />
+                    </div>
+                    <div className="font-sans font-semibold text-zinc-200 text-md">
+                        Collaborators: {userCount}
+                    </div>
                 </div>
             </div>
         </div>
