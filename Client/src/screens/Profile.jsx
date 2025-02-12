@@ -19,7 +19,6 @@ export default function Profile() {
                     "/api/projects/get-all-userprojects"
                 );
                 setProjects(res.data.projects);
-                console.log(res.data);
             } catch (error) {
                 console.log(error);
             }
@@ -46,7 +45,14 @@ export default function Profile() {
                         All Projects
                     </h2>
                     {/*TODO: Replace the following with dynamic project data */}
-                    <BentoGridDemo projects={projects} />
+                    {projects?.length === 0 ? (
+                        <div className="text-xl text-center text-zinc-200 font-semibold">
+                            Hey! You don&apos;t have any projects yet.
+                            <p>Create one now!</p>
+                        </div>
+                    ) : (
+                        <BentoGridDemo projects={projects} />
+                    )}
                 </div>
             </div>
             <div className="absolute bottom-12 right-12">

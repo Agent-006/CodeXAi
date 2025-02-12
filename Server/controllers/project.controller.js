@@ -17,15 +17,19 @@ export const createProjectController = async (req, res) => {
     }
 
     try {
-        const { name } = req.body;
+        const { title, description } = req.body;
+
+        if (!title || !description) {
+            return res.status(400).json({
+                message: "Title and description are required",
+            });
+        }
+
         const loggedInUser = await User.findOne({
             email: req.user.email,
         });
-
-        const userId = loggedInUser._id;
-
-        const newProject = await createProject({ name, userId });
-
+        const ownerId = loggedInUser._id;
+        const newProject = await createProject({ title, description, ownerId });
         return res.status(200).json({
             newProject,
             message: "Project created successfully",
@@ -33,7 +37,9 @@ export const createProjectController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message || "Some error occurred while creating the project",
+            error:
+                error.message ||
+                "Some error occurred while creating the project",
         });
     }
 };
@@ -47,7 +53,6 @@ export const getAllUserProjectsController = async (req, res) => {
         const userId = loggedInUser._id;
 
         const projects = await getProjectsByUserId({ userId });
-
         return res.status(200).json({
             projects,
             message: "Projects fetched successfully",
@@ -55,7 +60,8 @@ export const getAllUserProjectsController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message || "Some error occurred while fetching projects",
+            error:
+                error.message || "Some error occurred while fetching projects",
         });
     }
 };
@@ -97,7 +103,9 @@ export const addUserToProjectController = async (req, res) => {
     } catch (error) {
         console.log(error.message);
         return res.status(500).send({
-            error: error.message || "Some error occurred while adding user to project",
+            error:
+                error.message ||
+                "Some error occurred while adding user to project",
         });
     }
 };
@@ -130,7 +138,8 @@ export const getProjectByIdController = async (req, res) => {
         console.log(error.message);
         return res.status(500).send({
             error:
-                error.message || "Some error occurred while fetching the project",
+                error.message ||
+                "Some error occurred while fetching the project",
         });
     }
 };

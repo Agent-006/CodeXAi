@@ -13,7 +13,8 @@ const router = Router();
 router.post(
     "/create-project",
     authUser,
-    body("name").isString().withMessage("Name must be a string"),
+    body("title").isString().withMessage("Title must be a string"),
+    body("description").isString().withMessage("Description must be a string"),
     createProjectController
 );
 
@@ -34,9 +35,6 @@ router.put(
     addUserToProjectController
 );
 
-router.get("/get-project/:projectId",
-    authUser,
-    getProjectByIdController
-)
+router.get("/get-project/:projectId", authUser, getProjectByIdController);
 
 export default router;

@@ -3,17 +3,36 @@ import Project from "../models/project.model.js";
 
 // Create a new project
 
-export const createProject = async ({ name, userId }) => {
-    if (!name || !userId) {
-        throw new Error("Name and userId are required");
+export const createProject = async ({ title, description, ownerId }) => {
+    try {
+        if (!title || !description || !ownerId) {
+            throw new Error("title, description and ownerId are required");
+        }
+
+        const existingProject = await Project.findOne({
+            title,
+        });
+
+        if (existingProject) {
+            throw new Error("Project name must be unique");
+        }
+
+        const project = await Project.create({
+            title,
+            description,
+            owner: ownerId,
+            members: [ownerId],
+        });
+        return project;
+    } catch (error) {
+        if (error.code === 11000) {
+            throw new Error("Project name must be unique");
+        } else if (error.name === "ValidationError") {
+            throw new Error("Validation error");
+        } else {
+            throw new Error(error.message);
+        }
     }
-
-    const project = await Project.create({
-        name,
-        users: [userId],
-    });
-
-    return project;
 };
 
 // Get all projects by user id
@@ -23,9 +42,33 @@ export const getProjectsByUserId = async ({ userId }) => {
         throw new Error("User id is required");
     }
 
-    const projects = await Project.find({
-        users: userId,
-    });
+    const projects = await Project.aggregate([
+        {
+            $match: {
+                $or: [{ owner: userId }, { members: userId }],
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            email: 1,
+                            // name: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $unwind: "$owner",
+        },
+    ]);
 
     return projects;
 };
@@ -56,7 +99,7 @@ export const addUserToProject = async ({ projectId, users, userId }) => {
     }
 
     // check if user is alredy in the project
-    if (!project.users.includes(userId)) {
+    if (!project.members.includes(userId)) {
         throw new Error("User not authorized to add users to project");
     }
 
@@ -67,7 +110,7 @@ export const addUserToProject = async ({ projectId, users, userId }) => {
         },
         {
             $addToSet: {
-                users: {
+                members: {
                     $each: users,
                 },
             },
@@ -91,7 +134,34 @@ export const getProjectById = async ({ projectId }) => {
         throw new Error("Project ID is invalid");
     }
 
-    const project = await Project.findById(projectId);
+    const project = await Project.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(projectId),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            email: 1,
+                            // name: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $unwind: "$owner",
+        },
+    ]);
+    console.log(project)
 
     if (!project) {
         throw new Error("Project not found");

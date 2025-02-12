@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { RiGroupLine } from "@remixicon/react";
+import { RiAdminLine, RiGroupLine } from "@remixicon/react";
 import { cn } from "../../lib/utils";
 
 export const BentoGrid = ({ className, children }) => {
@@ -15,7 +15,13 @@ export const BentoGrid = ({ className, children }) => {
     );
 };
 
-export const BentoGridItem = ({ className, title, description, userCount }) => {
+export const BentoGridItem = ({
+    className,
+    title,
+    owner,
+    description,
+    userCount,
+}) => {
     return (
         <div
             className={cn(
@@ -28,6 +34,12 @@ export const BentoGridItem = ({ className, title, description, userCount }) => {
                     <h1 className="font-sans font-bold text-zinc-100 text-2xl mb-2 mt-2">
                         {title}
                     </h1>
+                    <h2 className="flex gap-2 w-full font-sans font-medium text-zinc-200 text-lg mb-2">
+                        <span className="text-blue-500">
+                            <RiAdminLine />
+                        </span>{" "}
+                        <span className="text-md font-normal">{owner}</span>
+                    </h2>
                     <p className="font-sans font-normal text-zinc-300 text-md mb-4">
                         {description}
                     </p>
