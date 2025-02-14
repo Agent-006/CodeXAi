@@ -16,14 +16,17 @@ export const BentoGrid = ({ className, children }) => {
 };
 
 export const BentoGridItem = ({
+    toProject,
     className,
     title,
     owner,
     description,
     userCount,
 }) => {
+
     return (
         <div
+            onClick={toProject}
             className={cn(
                 "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-6 bg-opacity-50 bg-clip-padding backdrop-filter backdrop-blur-lg bg-zinc-950/40 border border-zinc-500 flex flex-col space-y-4 cursor-pointer",
                 className

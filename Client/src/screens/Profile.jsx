@@ -4,15 +4,20 @@ import { useContext, useEffect, useState } from "react";
 import { BentoGridDemo } from "../components/BentoGridDemo";
 import Aurora from "../blocks/Backgrounds/Aurora/Aurora";
 import axios from "../config/axios";
+// import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
     const [projects, setProjects] = useState([]);
-
+    // const navigate = useNavigate();
     const { user } = useContext(UserContext);
 
     console.log(user);
 
     useEffect(() => {
+        // if (user === null) {
+        //     navigate("/login");
+        // }
+        // TODO: re-render when a new project is created
         (async () => {
             try {
                 const res = await axios.get(
