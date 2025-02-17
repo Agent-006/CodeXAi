@@ -11,7 +11,7 @@ import { authUser } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-// POST /api/user/register
+// POST /api/users/register
 // Register a new user
 router.post(
     "/register",
@@ -22,7 +22,7 @@ router.post(
     createUserController
 );
 
-// POST /api/user/login
+// POST /api/users/login
 // Login user
 router.post(
     "/login",
@@ -33,7 +33,7 @@ router.post(
     loginUserController
 );
 
-// GET /api/user/:id
+// GET /api/users/profile
 // Get a user profile
 
 router.get("/profile", authUser, getUserProfileController);

@@ -1,22 +1,17 @@
 import { AnimatedModal } from "../components/AnimatedModel";
-import { UserContext } from "../context/user.context";
 import { useContext, useEffect, useState } from "react";
 import { BentoGridDemo } from "../components/BentoGridDemo";
 import Aurora from "../blocks/Backgrounds/Aurora/Aurora";
 import axios from "../config/axios";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/user.context";
 
 export default function Profile() {
     const [projects, setProjects] = useState([]);
-    // const navigate = useNavigate();
     const { user } = useContext(UserContext);
-
-    console.log(user);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // if (user === null) {
-        //     navigate("/login");
-        // }
         // TODO: re-render when a new project is created
         (async () => {
             try {
@@ -28,13 +23,13 @@ export default function Profile() {
                 console.log(error);
             }
         })();
-    }, []);
+    }, [navigate]);
 
     return (
         <div className="relative h-screen w-full flex flex-col items-center justify-center text-zinc-200">
             <nav className="absolute z-20 top-5 rounded-md w-[98%] p-4 flex justify-between items-center bg-zinc-950/40 backdrop-blur-2xl antialiased">
                 <h1 className="text-xl font-semibold">
-                    Welcome, {user?.email.split("@")[0] || "user"}
+                    Welcome, {user?.email?.split("@")[0] || "___"}
                 </h1>
                 <button className="bg-zinc-950/60 border-[1px] border-zinc-400 px-4 py-2 rounded cursor-pointer hover:bg-zinc-950/70 transition-colors font-semibold">
                     Logout

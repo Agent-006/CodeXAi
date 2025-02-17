@@ -74,9 +74,20 @@ export const loginUserController = async (req, res) => {
 // Get a user profile
 
 export const getUserProfileController = async (req, res) => {
+
+    const user = req.user;
+
+    if(!user) {
+        return res.status(404).json({
+            error: "Token not found"
+        })
+    }
+
+    console.log(user);
+    
     try {
         return res.status(200).json({
-            user: req.user,
+            user,
         });
     } catch (error) {
         return res.status(500).json({

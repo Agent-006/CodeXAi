@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
+const Axios = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     headers: {
         Authorization: `bearer ${localStorage.getItem("token")}`,
     },
 });
 
-export default axiosInstance;
+export default Axios;
