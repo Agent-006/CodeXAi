@@ -1,8 +1,8 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "../config/axios";
 
 import { UserContext } from "../context/user.context";
+import Axios from "../config/axios";
 
 const Register = () => {
     const [data, setData] = useState({
@@ -18,7 +18,7 @@ const Register = () => {
         try {
             e.preventDefault();
 
-            const res = await axios.post("/api/users/register", {
+            const res = await Axios.post("/api/users/register", {
                 email: data.email,
                 password: data.password,
             });

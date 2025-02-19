@@ -1,12 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { Vortex } from "../components/ui/votex";
 import { RainbowButton } from "../components/ui/RainbowButton";
+import { InteractiveHoverButton } from "../components/ui/InteractiveHoverButton";
 
 const Home = () => {
     const navigate = useNavigate();
 
-    const handleClick = () => {
+    const navigateToRegister = () => {
         navigate("/register");
+    };
+
+    const navigateToLogin = () => {
+        navigate("/login");
     };
 
     return (
@@ -26,9 +31,12 @@ const Home = () => {
                     to code, chat, and innovate together.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-                    <RainbowButton onClick={handleClick}>
+                    <RainbowButton onClick={navigateToRegister}>
                         Get Started
                     </RainbowButton>
+                    <InteractiveHoverButton onClick={navigateToLogin}>
+                        Login
+                    </InteractiveHoverButton>
                 </div>
             </Vortex>
         </div>
