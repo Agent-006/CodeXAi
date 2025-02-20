@@ -41,6 +41,6 @@ router.get("/profile", authUser, getUserProfileController);
 router.get("/logout", authUser, logoutUserController);
 
 // get all users
-router.get("/get-all-users", authUser, getAllUsersController);
+router.post("/get-all-users", authUser, getAllUsersController);
 
 export default router;

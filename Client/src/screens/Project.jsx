@@ -1,12 +1,13 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 
 import {
     RiAddLargeLine,
     RiDoorClosedLine,
     RiGroupLine,
     RiSendPlaneFill,
+    RiSubtractLine,
 } from "@remixicon/react";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Axios from "../config/axios";
 
@@ -14,31 +15,21 @@ import { UserContext } from "../context/user.context";
 
 export default function Project() {
     const location = useLocation();
-    const project = location.state.project;
+    const projectId = location.state.project._id;
+
+    const [project, setProject] = useState(null);
 
     const { user } = useContext(UserContext);
 
-    console.log(project);
+    console.log(projectId);
 
-    const users = [
-        { username: "john_doe", email: "john.doe@example.com" },
-        { username: "jane_smith", email: "jane.smith@example.com" },
-        { username: "alice_wonderland", email: "alice.wonderland@example.com" },
-        { username: "bob_builder", email: "bob.builder@example.com" },
-        { username: "charlie_brown", email: "charlie.brown@example.com" },
-        { username: "diana_prince", email: "diana.prince@example.com" },
-        { username: "edward_elric", email: "edward.elric@example.com" },
-        { username: "fiona_gallagher", email: "fiona.gallagher@example.com" },
-        { username: "george_foreman", email: "george.foreman@example.com" },
-        { username: "hannah_montana", email: "hannah.montana@example.com" },
-        { username: "ian_somerhalder", email: "ian_somerhalder@example.com" },
-        { username: "ian_somerhalder", email: "ian_somerhalder@example.com" },
-        { username: "ian_somerhalder", email: "ian_somerhalder@example.com" },
-        { username: "ian_somerhalder", email: "ian_somerhalder@example.com" },
-    ];
+    const [users, setUsers] = useState([]);
 
     const [showMembers, setShowMembers] = useState(false);
     const [showUsers, setShowUsers] = useState(false);
+    const [isAdded, setIsAdded] = useState(false);
+
+    const [selectedUsers, setSelectedUsers] = useState([]);
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -48,26 +39,78 @@ export default function Project() {
         setShowMembers(false);
     };
 
-    const handleUsersButtonClick = async (email) => {
+    const handleUsersButtonClick = async () => {
         setShowUsers(true);
         setShowMembers(false);
-        console.log(email);
-        const res = await Axios.get("/api/users/get-all-users");
-        console.log(res.data);
+        try {
+            const res = await Axios.post("/api/users/get-all-users", {
+                email: user.email,
+            });
+            console.log(res.data);
+            setUsers(res.data.users);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
     };
 
     const handleUsersClose = () => {
         setShowUsers(false);
     };
 
-    const handleAddUserToProject = async (user) => {
+    const handleSelectUsers = (userId) => {
+        console.log(selectedUsers);
+        if (!selectedUsers.includes(userId)) {
+            setSelectedUsers([...selectedUsers, userId]);
+
+            setIsAdded((prev) => !prev);
+        }
+        console.log(selectedUsers);
+    };
+
+    const handleDeSelectUsers = (userId) => {
+        console.log(selectedUsers);
+        if (selectedUsers.includes(userId)) {
+            selectedUsers.pop(userId);
+
+            setIsAdded((prev) => !prev);
+        }
+    };
+    const handleAddUsersToProject = async (user) => {
         //TODO: Logic to add user to the project
+        console.log(selectedUsers);
+        try {
+            const res = await Axios.put("/api/projects/add-user-to-project", {
+                projectId: projectId,
+                users: selectedUsers,
+            });
+            console.log(res.data);
+            setProject(res.data.updatedProject);
+            setShowUsers(false);
+        } catch (error) {
+            console.error("Error adding users to project:", error);
+        }
         console.log(`Adding ${user} to the project`);
     };
 
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await Axios.get(
+                    `/api/projects/get-project/${projectId}`
+                );
+                console.log(res.data);
+                setProject(res.data.project[0]);
+                console.log(project);
+            } catch (error) {
+                console.error("Error fetching project:", error);
+            }
+        })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [projectId]);
+
     return (
-        <main className="w-full h-screen flex text-white bg-gradient-to-r from-gray-900 to-gray-800">
-            <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-1/4 shadow-lg flex flex-col border-r border-gray-700">
+        <main className="w-full h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
+            <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-1/4 shadow-lg flex flex-col border-r border-gray-700">
                 <header className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-60 border-b border-gray-700">
                     <span className="text-lg font-bold">Logo</span>
                     <span className="flex items-center gap-2">
@@ -125,7 +168,7 @@ export default function Project() {
                     </div>
                 </footer>
             </section>
-            <section className="code-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-3/4 p-8 shadow-lg">
+            <section className="code-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-3/4 p-8 shadow-lg">
                 <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
                     {project?.title.toUpperCase()}
                 </h2>
@@ -138,11 +181,11 @@ export default function Project() {
 
             {showMembers && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-1/3 border border-gray-700">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 md:w-1/3 border border-gray-700">
                         <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2">
                             Project Members
                         </h2>
-                        <ul className="list-disc list-inside text-gray-300 space-y-2">
+                        <ul className="list-disc list-inside text-gray-300 space-y-2 max-h-96 overflow-y-auto py-2">
                             {project?.members.map((member, index) => (
                                 <li
                                     key={index}
@@ -162,9 +205,7 @@ export default function Project() {
                         <div className="flex justify-end gap-2">
                             <button
                                 className="flex items-center justify-center gap-2 mt-4 p-2 bg-green-600 rounded text-white hover:bg-green-700 transition duration-300"
-                                onClick={() =>
-                                    handleUsersButtonClick(user.email)
-                                }
+                                onClick={handleUsersButtonClick}
                             >
                                 Add Collaborators <RiAddLargeLine />
                             </button>
@@ -181,14 +222,14 @@ export default function Project() {
 
             {showUsers && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-1/3 border border-gray-700">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 md:w-1/3 border border-gray-700">
                         <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2 h-full">
                             Registered Users
                         </h2>
-                        <ul className="list-disc list-inside text-gray-300 space-y-2 max-h-96 overflow-y-auto">
+                        <ul className="list-disc list-inside text-gray-300 space-y-4 max-h-96 overflow-y-auto">
                             {users.map((user, index) => (
                                 <li
-                                    key={index}
+                                    key={user._id}
                                     className="flex items-center gap-2"
                                 >
                                     <img
@@ -198,20 +239,32 @@ export default function Project() {
                                         alt={user}
                                         className="w-8 h-8 rounded-full"
                                     />
-                                    {user.username} - {user.email}
+                                    {user.email.split("@")[0]}
                                     <span className="ml-auto"></span>
                                     <button
                                         className="ml-auto p-1 rounded text-white hover:bg-zinc-900 transition duration-300"
-                                        onClick={() =>
-                                            handleAddUserToProject(user)
-                                        }
+                                        onClick={() => {
+                                            selectedUsers.includes(user._id)
+                                                ? handleDeSelectUsers(user._id)
+                                                : handleSelectUsers(user._id);
+                                        }}
                                     >
-                                        <RiAddLargeLine />
+                                        {selectedUsers.includes(user._id) ? (
+                                            <RiSubtractLine />
+                                        ) : (
+                                            <RiAddLargeLine />
+                                        )}
                                     </button>
                                 </li>
                             ))}
                         </ul>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-4">
+                            <button
+                                className="flex items-center justify-center gap-1 mt-4 p-2 bg-green-600 rounded text-white hover:bg-green-700 transition duration-300"
+                                onClick={handleAddUsersToProject}
+                            >
+                                Add <RiAddLargeLine />
+                            </button>
                             <button
                                 className="flex items-center justify-center gap-1 mt-4 p-2 bg-red-600 rounded text-white hover:bg-red-700 transition duration-300"
                                 onClick={handleUsersClose}
