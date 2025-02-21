@@ -21,8 +21,6 @@ export default function Project() {
 
     const { user } = useContext(UserContext);
 
-    console.log(projectId);
-
     const [users, setUsers] = useState([]);
 
     const [showMembers, setShowMembers] = useState(false);
@@ -46,7 +44,6 @@ export default function Project() {
             const res = await Axios.post("/api/users/get-all-users", {
                 email: user.email,
             });
-            console.log(res.data);
             setUsers(res.data.users);
         } catch (error) {
             console.error("Error fetching users:", error);
@@ -58,17 +55,14 @@ export default function Project() {
     };
 
     const handleSelectUsers = (userId) => {
-        console.log(selectedUsers);
         if (!selectedUsers.includes(userId)) {
             setSelectedUsers([...selectedUsers, userId]);
 
             setIsAdded((prev) => !prev);
         }
-        console.log(selectedUsers);
     };
 
     const handleDeSelectUsers = (userId) => {
-        console.log(selectedUsers);
         if (selectedUsers.includes(userId)) {
             selectedUsers.pop(userId);
 
@@ -76,20 +70,16 @@ export default function Project() {
         }
     };
     const handleAddUsersToProject = async (user) => {
-        //TODO: Logic to add user to the project
-        console.log(selectedUsers);
         try {
             const res = await Axios.put("/api/projects/add-user-to-project", {
                 projectId: projectId,
                 users: selectedUsers,
             });
-            console.log(res.data);
             setProject(res.data.updatedProject);
             setShowUsers(false);
         } catch (error) {
             console.error("Error adding users to project:", error);
         }
-        console.log(`Adding ${user} to the project`);
     };
 
     useEffect(() => {
@@ -105,7 +95,7 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
 
     return (
@@ -183,7 +173,7 @@ export default function Project() {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                     <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-11/12 md:w-1/3 border border-gray-700">
                         <h2 className="text-xl font-bold mb-4 border-b border-gray-700 pb-2">
-                            Project Members
+                            Collaborators
                         </h2>
                         <ul className="list-disc list-inside text-gray-300 space-y-2 max-h-96 overflow-y-auto py-2">
                             {project?.members.map((member, index) => (
