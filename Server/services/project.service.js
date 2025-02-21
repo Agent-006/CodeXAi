@@ -161,7 +161,7 @@ export const getProjectById = async ({ projectId }) => {
             $unwind: "$owner",
         },
     ]);
-    console.log(project)
+    // console.log(project)
 
     if (!project) {
         throw new Error("Project not found");

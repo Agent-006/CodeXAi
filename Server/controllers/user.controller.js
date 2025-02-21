@@ -83,7 +83,7 @@ export const getUserProfileController = async (req, res) => {
         })
     }
 
-    console.log(user);
+    // console.log(user);
     
     try {
         return res.status(200).json({

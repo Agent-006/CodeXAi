@@ -13,6 +13,12 @@ import Axios from "../config/axios";
 
 import { UserContext } from "../context/user.context";
 
+import {
+    initializeSocket,
+    receiveMessage,
+    sendMessage,
+} from "../config/socket";
+
 export default function Project() {
     const location = useLocation();
     const projectId = location.state.project._id;
@@ -95,8 +101,10 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [projectId]);
+
+        // socket initialization
+        initializeSocket();
+    }, []);
 
     return (
         <main className="w-full h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
