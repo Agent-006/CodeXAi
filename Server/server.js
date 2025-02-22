@@ -79,12 +79,10 @@ io.on("connection", async (socket) => {
         });
     });
 
-    socket.on("event", (data) => {
-        /* … */
-    });
     socket.on("disconnect", () => {
         /* … */
         console.log("A user disconnected");
+        socket.leave(socket.roomId);
     });
 });
 

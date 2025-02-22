@@ -7,7 +7,7 @@ import {
     RiSendPlaneFill,
     RiSubtractLine,
 } from "@remixicon/react";
-import { createRef, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Axios from "../config/axios";
 
@@ -80,6 +80,7 @@ export default function Project() {
             setIsAdded((prev) => !prev);
         }
     };
+
     const handleAddUsersToProject = async () => {
         try {
             const res = await Axios.put("/api/projects/add-user-to-project", {
@@ -94,12 +95,12 @@ export default function Project() {
     };
 
     const handleSendMessage = () => {
-        console.log("userId", user._id);
-        console.log(message);
         sendMessage("project-message", {
             message,
             sender: user._id,
         });
+
+        appendOutgoingMessage(message);
 
         setMessage("");
     };
@@ -117,7 +118,7 @@ export default function Project() {
         messageElement.className =
             "incoming-message flex items-start gap-4 mb-4";
         messageElement.innerHTML = `
-            <img src="" alt="User" class="w-10 h-10 rounded-full" />
+            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" class="w-10 h-10 rounded-full" />
             <div>
                 <h1 class="outgoing-message font-semibold">${
                     sender.email.split("@")[0]
@@ -128,8 +129,36 @@ export default function Project() {
                 </div>
             </div>
         `;
-        console.log(messageElement);
         messageContainer.appendChild(messageElement);
+        scrollToBottom();
+    };
+
+    const appendOutgoingMessage = (message) => {
+        const messageContainer = messageBox.current;
+
+        if (!messageContainer) {
+            console.warn("Message container not found");
+            return;
+        }
+
+        const messageElement = document.createElement("div");
+        messageElement.className =
+            "outgoing-message flex items-end justify-end gap-4 mb-4";
+        messageElement.innerHTML = `
+            <div>
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <p>${message}</p>
+                </div>
+            </div>
+            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" class="w-10 h-10 rounded-full" />
+        `;
+        messageContainer.appendChild(messageElement);
+        scrollToBottom();
+    };
+
+    const scrollToBottom = () => {
+        const messageContainer = messageBox.current;
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     };
 
     useEffect(() => {
@@ -155,10 +184,10 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
-    }, [projectId]);
+    }, [projectId, setProject]);
 
     return (
-        <main className="w-full h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
+        <main className="w-full min-h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
             <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-1/4 shadow-lg flex flex-col border-r border-gray-700">
                 <header className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-60 border-b border-gray-700">
                     <span className="text-lg font-bold">Logo</span>
@@ -173,35 +202,8 @@ export default function Project() {
                     </button>
                 </header>
 
-                <div className="chat-box bg-gray-800 bg-opacity-60 flex-grow overflow-y-auto">
-                    <div ref={messageBox} className="p-4">
-                        <div className="incoming-message flex items-start gap-4 mb-4">
-                            <img
-                                src="https://randomuser.me/api/portraits/men/1.jpg"
-                                alt="User"
-                                className="w-10 h-10 rounded-full"
-                            />
-                            <div>
-                                <h1 className="font-semibold">John Doe</h1>
-                                <p className="text-sm text-gray-400">Online</p>
-                                <div className="bg-gray-700 p-2 rounded-lg mt-2">
-                                    <p>Hello! How are you?</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="outgoing-message flex items-end justify-end gap-4 mb-4">
-                            <div>
-                                <div className="bg-blue-600 p-2 rounded-lg">
-                                    <p>I&apos;m good, thanks!</p>
-                                </div>
-                            </div>
-                            <img
-                                src="https://randomuser.me/api/portraits/men/2.jpg"
-                                alt="User"
-                                className="w-10 h-10 rounded-full"
-                            />
-                        </div>
-                    </div>
+                <div ref={messageBox} className="chat-box bg-gray-800 bg-opacity-60 overflow-y-auto w-full h-[81vh] p-4">
+                        {/* Messages will be appended here */}
                 </div>
 
                 <footer className="bg-gray-800 bg-opacity-60 border-t border-gray-700">
@@ -222,7 +224,7 @@ export default function Project() {
                     </div>
                 </footer>
             </section>
-            <section className="code-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-3/4 p-8 shadow-lg">
+            <section className="code-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-[100vh] w-full md:w-3/4 p-8 shadow-lg">
                 <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
                     {project?.title.toUpperCase()}
                 </h2>
