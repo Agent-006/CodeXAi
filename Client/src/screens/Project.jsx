@@ -7,7 +7,7 @@ import {
     RiSendPlaneFill,
     RiSubtractLine,
 } from "@remixicon/react";
-import { useContext, useEffect, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Axios from "../config/axios";
 
@@ -26,6 +26,7 @@ export default function Project() {
     const [project, setProject] = useState(null);
 
     const { user } = useContext(UserContext);
+    console.log(user);
 
     const [users, setUsers] = useState([]);
 
@@ -34,6 +35,10 @@ export default function Project() {
     const [isAdded, setIsAdded] = useState(false);
 
     const [selectedUsers, setSelectedUsers] = useState([]);
+
+    const [message, setMessage] = useState("");
+
+    const messageBox = useRef();
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -75,7 +80,7 @@ export default function Project() {
             setIsAdded((prev) => !prev);
         }
     };
-    const handleAddUsersToProject = async (user) => {
+    const handleAddUsersToProject = async () => {
         try {
             const res = await Axios.put("/api/projects/add-user-to-project", {
                 projectId: projectId,
@@ -88,7 +93,54 @@ export default function Project() {
         }
     };
 
+    const handleSendMessage = () => {
+        console.log("userId", user._id);
+        console.log(message);
+        sendMessage("project-message", {
+            message,
+            sender: user._id,
+        });
+
+        setMessage("");
+    };
+
+    const appendIncomingMessage = (messageObject) => {
+        const { message, sender } = messageObject;
+        const messageContainer = messageBox.current;
+
+        if (!messageContainer) {
+            console.warn("Message container not found");
+            return;
+        }
+
+        const messageElement = document.createElement("div");
+        messageElement.className =
+            "incoming-message flex items-start gap-4 mb-4";
+        messageElement.innerHTML = `
+            <img src="" alt="User" class="w-10 h-10 rounded-full" />
+            <div>
+                <h1 class="outgoing-message font-semibold">${
+                    sender.email.split("@")[0]
+                }</h1>
+                <p class="text-sm text-gray-400">Online</p>
+                <div class="bg-gray-700 p-2 rounded-lg mt-2">
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+        console.log(messageElement);
+        messageContainer.appendChild(messageElement);
+    };
+
     useEffect(() => {
+        // socket initialization
+        initializeSocket(projectId);
+
+        receiveMessage("project-message", (data) => {
+            console.log(data);
+            appendIncomingMessage(data);
+        });
+
         (async () => {
             try {
                 const res = await Axios.get(
@@ -97,14 +149,13 @@ export default function Project() {
                 console.log(res.data);
                 setProject(res.data.project[0]);
                 console.log(project);
+
+                console.log("projectID", projectId);
             } catch (error) {
                 console.error("Error fetching project:", error);
             }
         })();
-
-        // socket initialization
-        initializeSocket();
-    }, []);
+    }, [projectId]);
 
     return (
         <main className="w-full h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
@@ -123,8 +174,8 @@ export default function Project() {
                 </header>
 
                 <div className="chat-box bg-gray-800 bg-opacity-60 flex-grow overflow-y-auto">
-                    <div className="p-4">
-                        <div className="flex items-start gap-4 mb-4">
+                    <div ref={messageBox} className="p-4">
+                        <div className="incoming-message flex items-start gap-4 mb-4">
                             <img
                                 src="https://randomuser.me/api/portraits/men/1.jpg"
                                 alt="User"
@@ -138,7 +189,7 @@ export default function Project() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-end justify-end gap-4 mb-4">
+                        <div className="outgoing-message flex items-end justify-end gap-4 mb-4">
                             <div>
                                 <div className="bg-blue-600 p-2 rounded-lg">
                                     <p>I&apos;m good, thanks!</p>
@@ -156,11 +207,16 @@ export default function Project() {
                 <footer className="bg-gray-800 bg-opacity-60 border-t border-gray-700">
                     <div className="p-4 flex items-center">
                         <input
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
                             type="text"
                             placeholder="Type your message..."
-                            className="flex-grow p-2 rounded-l-md bg-gray-700 text-white focus:outline-none"
+                            className="flex-grow py-2 px-4 rounded-l-md bg-gray-700 text-white focus:outline-none"
                         />
-                        <button className="flex items-center justify-center p-2 px-3 bg-blue-600 rounded-r-md text-white hover:bg-blue-700">
+                        <button
+                            onClick={handleSendMessage}
+                            className="flex items-center justify-center p-2 px-3 bg-blue-600 rounded-r-md text-white hover:bg-blue-700"
+                        >
                             <RiSendPlaneFill />
                         </button>
                     </div>

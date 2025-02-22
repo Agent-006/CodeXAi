@@ -3,16 +3,16 @@ import { useContext, useEffect, useState } from "react";
 import { BentoGridDemo } from "../components/BentoGridDemo";
 import Aurora from "../blocks/Backgrounds/Aurora/Aurora";
 import axios from "../config/axios";
-import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/user.context";
 
 export default function Profile() {
     const [projects, setProjects] = useState([]);
     const { user } = useContext(UserContext);
-    const navigate = useNavigate();
 
     useEffect(() => {
         // TODO: re-render when a new project is created
+        console.log(user);
+        
         (async () => {
             try {
                 const res = await axios.get(
@@ -23,7 +23,7 @@ export default function Profile() {
                 console.log(error);
             }
         })();
-    }, [navigate]);
+    }, [user]);
 
     return (
         <div className="relative h-screen w-full flex flex-col items-center justify-center text-zinc-200">

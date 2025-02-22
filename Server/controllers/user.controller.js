@@ -74,20 +74,29 @@ export const loginUserController = async (req, res) => {
 // Get a user profile
 
 export const getUserProfileController = async (req, res) => {
-
     const user = req.user;
 
-    if(!user) {
+    if (!user) {
         return res.status(404).json({
-            error: "Token not found"
-        })
+            error: "Token not found",
+        });
     }
 
     // console.log(user);
-    
     try {
+        const data = await User.findOne({
+            email: user.email,
+        });
+
+        if (!data) {
+            return res.status(404).json({
+                error: "User not found",
+            });
+        }
+
         return res.status(200).json({
-            user,
+            user: data,
+            message: "User profile fetched successfully",
         });
     } catch (error) {
         return res.status(500).json({
@@ -97,6 +106,7 @@ export const getUserProfileController = async (req, res) => {
         });
     }
 };
+
 
 // Logout a user
 

@@ -1,11 +1,13 @@
 /* eslint-disable react/prop-types */
 import { createContext, useEffect, useState } from "react";
 import Axios from "../config/axios";
+import { useNavigate } from "react-router-dom";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         (async () => {
@@ -16,9 +18,11 @@ export const UserProvider = ({ children }) => {
                 if (res) {
                     setUser(res.data.user);
                 }
+            } else {
+                navigate("/");
             }
         })();
-    },[]);
+    }, []);
 
     return (
         <UserContext.Provider value={{ user, setUser }}>

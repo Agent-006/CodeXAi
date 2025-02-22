@@ -7,6 +7,11 @@ import { Server } from "socket.io";
 
 import jwt from "jsonwebtoken";
 
+import mongoose from "mongoose";
+import Project from "./models/project.model.js";
+import User from "./models/user.models.js";
+import { getUserById } from "./services/user.service.js";
+
 const server = http.createServer(app); // create a server
 
 const PORT = process.env.PORT || 3000; // 3000 is the default port
@@ -19,11 +24,17 @@ const io = new Server(server, {
 });
 
 // middleware
-io.use((socket, next) => {
+io.use(async (socket, next) => {
     try {
         const token =
             socket.handshake.auth?.token ||
             socket.handshake.headers.authorization?.split(" ")[1];
+
+        const projectId = socket.handshake.query.projectId;
+
+        if (!mongoose.Types.ObjectId.isValid(projectId)) {
+            return next(new Error("Invalid project ID"));
+        }
 
         if (!token) {
             return next(new Error("Authentication error - no token"));
@@ -35,6 +46,8 @@ io.use((socket, next) => {
             return next(new Error("Authentication error - invalid token"));
         }
 
+        socket.project = await Project.findById(projectId).lean();
+
         socket.user = decoded;
         next();
     } catch (error) {
@@ -43,8 +56,28 @@ io.use((socket, next) => {
 });
 
 // socket.io events
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+    socket.roomId = socket.project._id.toString();
+
     console.log("A user connected");
+
+    console.log(socket.roomId);
+
+    socket.join(socket.roomId);
+
+    socket.on("project-message", (data) => {
+        console.log(data);
+
+        getUserById(data.sender).then((user) => {
+            console.log(user);
+            data = {
+                ...data,
+                sender: user,
+            };
+            console.log(data);
+            socket.broadcast.to(socket.roomId).emit("project-message", data);
+        });
+    });
 
     socket.on("event", (data) => {
         /* … */
