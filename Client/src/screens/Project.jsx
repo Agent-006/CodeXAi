@@ -19,6 +19,8 @@ import {
     sendMessage,
 } from "../config/socket";
 
+import Markdown from "markdown-to-jsx";
+
 export default function Project() {
     const location = useLocation();
     const projectId = location.state.project._id;
@@ -39,6 +41,8 @@ export default function Project() {
     const [message, setMessage] = useState("");
 
     const messageBox = useRef();
+
+    const [messages, setMessages] = useState([]);
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -107,53 +111,26 @@ export default function Project() {
 
     const appendIncomingMessage = (messageObject) => {
         const { message, sender } = messageObject;
-        const messageContainer = messageBox.current;
 
-        if (!messageContainer) {
-            console.warn("Message container not found");
-            return;
-        }
+        const newMessage = {
+            type: "incoming",
+            message,
+            sender,
+            id: Date.now(), // unique id for each message
+        };
 
-        const messageElement = document.createElement("div");
-        messageElement.className =
-            "incoming-message flex items-start gap-4 mb-4";
-        messageElement.innerHTML = `
-            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" class="w-10 h-10 rounded-full" />
-            <div>
-                <h1 class="outgoing-message font-semibold">${
-                    sender.email.split("@")[0]
-                }</h1>
-                <p class="text-sm text-gray-400">Online</p>
-                <div class="bg-gray-700 p-2 rounded-lg mt-2">
-                    <p>${message}</p>
-                </div>
-            </div>
-        `;
-        messageContainer.appendChild(messageElement);
-        scrollToBottom();
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
     };
 
     const appendOutgoingMessage = (message) => {
-        const messageContainer = messageBox.current;
+        const newMessage = {
+            type: "outgoing",
+            message,
+            sender: user,
+            id: Date.now(),
+        };
 
-        if (!messageContainer) {
-            console.warn("Message container not found");
-            return;
-        }
-
-        const messageElement = document.createElement("div");
-        messageElement.className =
-            "outgoing-message flex items-end justify-end gap-4 mb-4";
-        messageElement.innerHTML = `
-            <div>
-                <div class="bg-blue-600 p-2 rounded-lg">
-                    <p>${message}</p>
-                </div>
-            </div>
-            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" class="w-10 h-10 rounded-full" />
-        `;
-        messageContainer.appendChild(messageElement);
-        scrollToBottom();
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
     };
 
     const scrollToBottom = () => {
@@ -166,7 +143,7 @@ export default function Project() {
         initializeSocket(projectId);
 
         receiveMessage("project-message", (data) => {
-            console.log(data);
+            console.log("data: ", data);
             appendIncomingMessage(data);
         });
 
@@ -186,6 +163,10 @@ export default function Project() {
         })();
     }, [projectId, setProject]);
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     return (
         <main className="w-full min-h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
             <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-1/4 shadow-lg flex flex-col border-r border-gray-700">
@@ -202,8 +183,65 @@ export default function Project() {
                     </button>
                 </header>
 
-                <div ref={messageBox} className="chat-box bg-gray-800 bg-opacity-60 overflow-y-auto w-full h-[81vh] p-4">
-                        {/* Messages will be appended here */}
+                <div
+                    ref={messageBox}
+                    className="chat-box bg-gray-800 bg-opacity-60 overflow-y-auto overflow-x-hidden w-full h-[81vh] p-4"
+                >
+                    {messages.map((msg) => (
+                        <div
+                            key={msg.id}
+                            className={`flex items-${
+                                msg.type === "outgoing"
+                                    ? "end justify-end"
+                                    : "start"
+                            } gap-4 mb-4`}
+                        >
+                            {msg.type === "incoming" && (
+                                <img
+                                    src="https://randomuser.me/api/portraits/men/1.jpg"
+                                    alt="User"
+                                    className="w-10 h-10 rounded-full"
+                                />
+                            )}
+
+                            <div>
+                                {msg.type === "incoming" && (
+                                    <>
+                                        <h1 className="font-semibold">
+                                            {msg.sender.email.split("@")[0]}
+                                        </h1>
+                                        <p className="text-sm text-gray-400">
+                                            Online
+                                        </p>
+                                    </>
+                                )}
+
+                                <div
+                                    className={`${
+                                        msg.type === "outgoing"
+                                            ? "bg-blue-600"
+                                            : "bg-gray-700"
+                                    } p-2 rounded-lg mt-2 overflow-x-auto w-72`}
+                                >
+                                    {msg.sender._id === "xai" ? (
+                                        <div className="">
+                                            <Markdown>{msg.message}</Markdown>
+                                        </div>
+                                    ) : (
+                                        <p>{msg.message}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {msg.type === "outgoing" && (
+                                <img
+                                    src="https://randomuser.me/api/portraits/men/1.jpg"
+                                    alt="User"
+                                    className="w-10 h-10 rounded-full"
+                                />
+                            )}
+                        </div>
+                    ))}
                 </div>
 
                 <footer className="bg-gray-800 bg-opacity-60 border-t border-gray-700">

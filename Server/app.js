@@ -1,8 +1,9 @@
 import express from "express";
 import morgan from "morgan";
 import dbConnect from "./db/db.js";
-import userRoutes from "./routes/user.route.js";
-import projectRoutes from "./routes/project.route.js";
+import userRoutes from "./routes/user.routes.js";
+import projectRoutes from "./routes/project.routes.js";
+import xaiRoutes from "./routes/xai.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -30,6 +31,9 @@ app.use("/api/users", userRoutes);
 
 // use project routes
 app.use("/api/projects", projectRoutes);
+
+// use ai routes
+app.use("/api/xai", xaiRoutes);
 
 app.get("/api/", (req, res) => {
     res.send("Welcome to the server");

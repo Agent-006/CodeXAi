@@ -9,8 +9,8 @@ import jwt from "jsonwebtoken";
 
 import mongoose from "mongoose";
 import Project from "./models/project.model.js";
-import User from "./models/user.models.js";
 import { getUserById } from "./services/user.service.js";
+import { XaiServiceGenerateResult } from "./services/xai.service.js";
 
 const server = http.createServer(app); // create a server
 
@@ -65,8 +65,37 @@ io.on("connection", async (socket) => {
 
     socket.join(socket.roomId);
 
-    socket.on("project-message", (data) => {
+    socket.on("project-message", async (data) => {
         console.log(data);
+
+        const message = data.message;
+
+        console.log("message: ", message);
+
+        const isXaiPresent = message.includes("@xai");
+
+        console.log("isXaiPresent: ", isXaiPresent);
+
+        if (isXaiPresent) {
+            const prompt = message.replace("@xai", "").trim();
+
+            console.log("prompt: ", prompt);
+
+            const result = await XaiServiceGenerateResult(prompt);
+
+            console.log("result: ", result);
+            data = {
+                sender: {
+                    _id: "xai",
+                    email: "xai@gmail.com",
+                },
+                message: result,
+            };
+            console.log(data);
+            io.to(socket.roomId).emit("project-message", data);
+
+            return;
+        }
 
         getUserById(data.sender).then((user) => {
             console.log(user);
