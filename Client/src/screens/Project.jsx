@@ -6,6 +6,7 @@ import {
     RiGroupLine,
     RiSendPlaneFill,
     RiSubtractLine,
+    RiFileCopyLine,
 } from "@remixicon/react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -20,6 +21,8 @@ import {
 } from "../config/socket";
 
 import Markdown from "markdown-to-jsx";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export default function Project() {
     const location = useLocation();
@@ -138,6 +141,65 @@ export default function Project() {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     };
 
+    const writeXaiMessage = (message) => {
+        console.log(message);
+        const messageObject = JSON.parse(message);
+        console.log(messageObject.text);
+
+        return (
+            <div className="md:w-72 w-[80vw]">
+                <Markdown
+                    options={{
+                        overrides: {
+                            code: {
+                                component: ({ className, children }) => {
+                                    const language = className
+                                        ? className.replace("language-", "")
+                                        : "javascript";
+
+                                    const handleCopy = () => {
+                                        navigator.clipboard.writeText(children);
+                                    };
+
+                                    return (
+                                        <div className="my-2 relative group">
+                                            <button
+                                                onClick={handleCopy}
+                                                className="absolute right-2 top-2 p-2 rounded bg-zinc-950 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                                                title="Copy code"
+                                            >
+                                                <RiFileCopyLine size={20} />
+                                            </button>
+                                            <SyntaxHighlighter
+                                                language={language}
+                                                style={vscDarkPlus}
+                                                customStyle={{
+                                                    padding: "1rem",
+                                                    borderRadius: "0.375rem",
+                                                    fontSize: "0.875rem",
+                                                }}
+                                                className="rounded-md"
+                                            >
+                                                {children}
+                                            </SyntaxHighlighter>
+                                        </div>
+                                    );
+                                },
+                            },
+                            pre: {
+                                component: ({ children }) => (
+                                    <div>{children}</div>
+                                ),
+                            },
+                        },
+                    }}
+                >
+                    {messageObject.text}
+                </Markdown>
+            </div>
+        );
+    };
+
     useEffect(() => {
         // socket initialization
         initializeSocket(projectId);
@@ -204,29 +266,31 @@ export default function Project() {
                                 />
                             )}
 
-                            <div>
-                                {msg.type === "incoming" && (
-                                    <>
-                                        <h1 className="font-semibold">
-                                            {msg.sender.email.split("@")[0]}
-                                        </h1>
-                                        <p className="text-sm text-gray-400">
-                                            Online
-                                        </p>
-                                    </>
-                                )}
+                            <div
+                                className={`${
+                                    msg.type === "outgoing"
+                                        ? "flex flex-col items-end"
+                                        : "flex flex-col items-start"
+                                }`}
+                            >
+                                <>
+                                    <h1 className="font-semibold">
+                                        {msg.sender.email.split("@")[0]}
+                                    </h1>
+                                    <p className="text-sm text-gray-400">
+                                        Online
+                                    </p>
+                                </>
 
                                 <div
                                     className={`${
                                         msg.type === "outgoing"
                                             ? "bg-blue-600"
                                             : "bg-gray-700"
-                                    } p-2 rounded-lg mt-2 overflow-x-auto w-72`}
+                                    } p-2 rounded-lg mt-2 overflow-x-auto`}
                                 >
                                     {msg.sender._id === "xai" ? (
-                                        <div className="">
-                                            <Markdown>{msg.message}</Markdown>
-                                        </div>
+                                        writeXaiMessage(msg.message)
                                     ) : (
                                         <p>{msg.message}</p>
                                     )}
