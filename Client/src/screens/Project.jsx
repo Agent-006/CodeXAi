@@ -7,6 +7,7 @@ import {
     RiSendPlaneFill,
     RiSubtractLine,
     RiFileCopyLine,
+    RiSave3Fill,
 } from "@remixicon/react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -23,6 +24,7 @@ import {
 import Markdown from "markdown-to-jsx";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import hljs from "highlight.js";
 
 export default function Project() {
     const location = useLocation();
@@ -46,6 +48,10 @@ export default function Project() {
     const messageBox = useRef();
 
     const [messages, setMessages] = useState([]);
+
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const [fileTree, setFileTree] = useState({});
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -201,14 +207,6 @@ export default function Project() {
     };
 
     useEffect(() => {
-        // socket initialization
-        initializeSocket(projectId);
-
-        receiveMessage("project-message", (data) => {
-            console.log("data: ", data);
-            appendIncomingMessage(data);
-        });
-
         (async () => {
             try {
                 const res = await Axios.get(
@@ -223,6 +221,20 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
+
+        // socket initialization
+        initializeSocket(projectId);
+
+        receiveMessage("project-message", (data) => {
+            const message = JSON.parse(data.message);
+            console.log("data: ", message);
+
+            if (message && message.fileTree) {
+                setFileTree(message.fileTree);
+            }
+
+            appendIncomingMessage(data);
+        });
     }, [projectId, setProject]);
 
     useEffect(() => {
@@ -231,7 +243,7 @@ export default function Project() {
 
     return (
         <main className="w-full min-h-screen flex flex-col md:flex-row text-white bg-gradient-to-r from-gray-900 to-gray-800">
-            <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-full w-full md:w-1/4 shadow-lg flex flex-col border-r border-gray-700">
+            <section className="chat-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-screen w-full md:w-1/4 shadow-lg flex flex-col border-r border-gray-700">
                 <header className="flex justify-between items-center p-4 bg-gray-800 bg-opacity-60 border-b border-gray-700">
                     <span className="text-lg font-bold">Logo</span>
                     <span className="flex items-center gap-2">
@@ -247,7 +259,7 @@ export default function Project() {
 
                 <div
                     ref={messageBox}
-                    className="chat-box bg-gray-800 bg-opacity-60 overflow-y-auto overflow-x-hidden w-full h-[81vh] p-4"
+                    className="chat-box bg-gray-800 bg-opacity-60 overflow-y-auto overflow-x-hidden w-full h-full px-2 py-4"
                 >
                     {messages.map((msg) => (
                         <div
@@ -330,10 +342,90 @@ export default function Project() {
                 <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
                     {project?.title.toUpperCase()}
                 </h2>
-                <div className="bg-gray-800 bg-opacity-60 p-4 rounded-lg shadow-inner border border-gray-700">
-                    <pre className="text-sm text-gray-300">
-                        {JSON.stringify(project, null, 2)}
-                    </pre>
+                <div className="flex">
+                    <div className="file-tree bg-gray-800 text-white p-4 rounded-l-lg shadow-inner border border-gray-700 md:h-[680px] w-1/4">
+                        <h3 className="text-lg font-bold mb-2 border-b border-gray-700 pb-1">
+                            File Tree
+                        </h3>
+                        <ul className="space-y-2">
+                            {Object.entries(fileTree).map(
+                                ([fileName], index) => (
+                                    <li
+                                        key={index}
+                                        className="cursor-pointer hover:text-blue-400"
+                                        onClick={() =>
+                                            setSelectedFile(fileName)
+                                        }
+                                    >
+                                        {fileName}
+                                    </li>
+                                )
+                            )}
+                        </ul>
+                    </div>
+                    <div className="code-editor bg-gray-900 text-white p-4 rounded-r-lg shadow-inner border border-gray-700 min-h-96 w-3/4 overflow-y-auto">
+                        {selectedFile && (
+                            <div className="file mb-4">
+                                <div>
+                                    <h3 className="flex justify-between items-center text-lg font-bold mb-2 border-b border-gray-700 pb-1">
+                                        {selectedFile}
+                                        <button
+                                            onClick={() => {
+                                                // Save the updated content to the server or perform any save action
+                                                console.log(
+                                                    "File content saved:",
+                                                    fileTree[selectedFile]
+                                                        ?.content
+                                                );
+                                            }}
+                                            className="mt-2 p-2 rounded text-white hover:text-gray-300 transition duration-300"
+                                        >
+                                            <RiSave3Fill />
+                                        </button>
+                                    </h3>
+                                </div>
+                                <pre
+                                    className="rounded-md hljs"
+                                    style={{
+                                        padding: "1rem",
+                                        borderRadius: "0.375rem",
+                                        fontSize: "0.875rem",
+                                        backgroundColor: "#2d2d2d",
+                                        color: "#f8f8f2",
+                                    }}
+                                >
+                                    <code
+                                        contentEditable
+                                        suppressHydrationWarning
+                                        onBlur={(e) => {
+                                            const updatedContent =
+                                                e.target.innerText;
+                                            const ft = {
+                                                ...fileTree,
+                                                [selectedFile]: {
+                                                    ...fileTree[selectedFile],
+                                                    content: updatedContent,
+                                                },
+                                            };
+                                            setFileTree(ft);
+                                        }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: hljs.highlight(
+                                                "javascript",
+                                                fileTree[selectedFile]?.content
+                                            ).value,
+                                        }}
+                                        style={{
+                                            whiteSpace: "pre-wrap",
+                                            wordWrap: "break-word",
+                                            paddingBottom: "1rem",
+                                            counterSet: "line-numbering",
+                                        }}
+                                    />
+                                </pre>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
 
