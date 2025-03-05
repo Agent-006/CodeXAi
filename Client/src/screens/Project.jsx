@@ -26,6 +26,8 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import hljs from "highlight.js";
 
+import { getWebContainer } from "../config/webContainer";
+
 export default function Project() {
     const location = useLocation();
     const projectId = location.state.project._id;
@@ -52,6 +54,8 @@ export default function Project() {
     const [selectedFile, setSelectedFile] = useState(null);
 
     const [fileTree, setFileTree] = useState({});
+
+    const [webContainer, setWebContainer] = useState(null);
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -154,6 +158,9 @@ export default function Project() {
 
         return (
             <div className="md:w-72 w-[80vw]">
+                <h4 className="text-lg font-bold mb-2">
+                    {messageObject.fileName}
+                </h4>
                 <Markdown
                     options={{
                         overrides: {
@@ -207,6 +214,27 @@ export default function Project() {
     };
 
     useEffect(() => {
+        // socket initialization
+        initializeSocket(projectId);
+
+        // get web container
+        if (!webContainer) {
+            getWebContainer().then((container) => {
+                setWebContainer(container);
+            });
+        }
+
+        receiveMessage("project-message", (data) => {
+            const message = JSON.parse(data.message);
+            console.log("data: ", message);
+
+            if (message && message.fileTree) {
+                setFileTree(message.fileTree);
+            }
+
+            appendIncomingMessage(data);
+        });
+
         (async () => {
             try {
                 const res = await Axios.get(
@@ -221,20 +249,6 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
-
-        // socket initialization
-        initializeSocket(projectId);
-
-        receiveMessage("project-message", (data) => {
-            const message = JSON.parse(data.message);
-            console.log("data: ", message);
-
-            if (message && message.fileTree) {
-                setFileTree(message.fileTree);
-            }
-
-            appendIncomingMessage(data);
-        });
     }, [projectId, setProject]);
 
     useEffect(() => {
@@ -304,7 +318,9 @@ export default function Project() {
                                     {msg.sender._id === "xai" ? (
                                         writeXaiMessage(msg.message)
                                     ) : (
-                                        <p>{msg.message}</p>
+                                        <>
+                                            <p>{msg.message}</p>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -363,19 +379,19 @@ export default function Project() {
                             )}
                         </ul>
                     </div>
-                    <div className="code-editor bg-gray-900 text-white p-4 rounded-r-lg shadow-inner border border-gray-700 min-h-96 w-3/4 overflow-y-auto">
+                    <div className="code-editor bg-gray-900 text-white px-4 py-2 rounded-r-lg shadow-inner border border-gray-700 min-h-96 w-3/4 overflow-y-auto">
                         {selectedFile && (
-                            <div className="file mb-4">
+                            <div className="file-contents">
                                 <div>
                                     <h3 className="flex justify-between items-center text-lg font-bold mb-2 border-b border-gray-700 pb-1">
                                         {selectedFile}
                                         <button
                                             onClick={() => {
-                                                // Save the updated content to the server or perform any save action
+                                                // Save the updated contents to the server or perform any save action
                                                 console.log(
-                                                    "File content saved:",
-                                                    fileTree[selectedFile]
-                                                        ?.content
+                                                    "File contents saved:",
+                                                    fileTree[selectedFile]?.file
+                                                        ?.contents
                                                 );
                                             }}
                                             className="mt-2 p-2 rounded text-white hover:text-gray-300 transition duration-300"
@@ -384,19 +400,10 @@ export default function Project() {
                                         </button>
                                     </h3>
                                 </div>
-                                <pre
-                                    className="rounded-md hljs"
-                                    style={{
-                                        padding: "1rem",
-                                        borderRadius: "0.375rem",
-                                        fontSize: "0.875rem",
-                                        backgroundColor: "#2d2d2d",
-                                        color: "#f8f8f2",
-                                    }}
-                                >
+                                <pre className="rounded-md hljs max-h-[600px] overflow-y-auto bg-gray-950/50 text-md font-semibold p-4 text-zinc-200">
                                     <code
-                                        contentEditable
-                                        suppressHydrationWarning
+                                        contentEditable={true}
+                                        suppressContentEditableWarning
                                         onBlur={(e) => {
                                             const updatedContent =
                                                 e.target.innerText;
@@ -404,7 +411,7 @@ export default function Project() {
                                                 ...fileTree,
                                                 [selectedFile]: {
                                                     ...fileTree[selectedFile],
-                                                    content: updatedContent,
+                                                    contents: updatedContent,
                                                 },
                                             };
                                             setFileTree(ft);
@@ -412,7 +419,8 @@ export default function Project() {
                                         dangerouslySetInnerHTML={{
                                             __html: hljs.highlight(
                                                 "javascript",
-                                                fileTree[selectedFile]?.content
+                                                fileTree[selectedFile]?.file
+                                                    ?.contents
                                             ).value,
                                         }}
                                         style={{
@@ -420,6 +428,7 @@ export default function Project() {
                                             wordWrap: "break-word",
                                             paddingBottom: "1rem",
                                             counterSet: "line-numbering",
+                                            outline: "none",
                                         }}
                                     />
                                 </pre>

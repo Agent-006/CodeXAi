@@ -20,35 +20,39 @@ const model = genAI.getGenerativeModel({
 
             "fileTree" : {
                 "app.js" : {
-                    content: "
-                        const express = require('express');
-
-                        const app = express();
-
-                        napp.get('/', (req, res) => {
-                            res.send('Hello World!');
-                        });
-
-                        app.listen(3000, () => {
-                            console.log('Example app listening on port 3000!');
-                        });
-                    "
-                },
+                    file: {
+                            contents: "
+                            const express = require('express');
+                            
+                            const app = express();
+                            
+                            app.get('/', (req, res) => {
+                                res.send('Hello World!');
+                            });
+                                
+                            app.listen(3000, () => {
+                                console.log('Example app listening on port 3000!');
+                            });
+                            "
+                        },
+                    },
                 "package.json" : {
-                    content: "
-                        {
-                            "name": "my-express-app",
-                            "version": "1.0.0",
-                            "description": "",
-                            "main": "app.js",
-                            "scripts": {
-                                "start": "node app.js"
-                            },
-                            "dependencies": {
-                                "express": "^4.17.1"
+                    file: {
+                            contents: "
+                            {
+                                "name": "my-express-app",
+                                "version": "1.0.0",
+                                "description": "",
+                                "main": "app.js",
+                                "scripts": {
+                                    "start": "node app.js"
+                                },
+                                "dependencies": {
+                                    "express": "^4.17.1"
+                                }
                             }
-                        }
-                    ",
+                        ",
+                    }
                 },
             },
 
