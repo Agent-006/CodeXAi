@@ -152,15 +152,10 @@ export default function Project() {
     };
 
     const writeXaiMessage = (message) => {
-        console.log(message);
         const messageObject = JSON.parse(message);
-        console.log(messageObject.text);
 
         return (
             <div className="md:w-72 w-[80vw]">
-                <h4 className="text-lg font-bold mb-2">
-                    {messageObject.fileName}
-                </h4>
                 <Markdown
                     options={{
                         overrides: {
@@ -209,6 +204,46 @@ export default function Project() {
                 >
                     {messageObject.text}
                 </Markdown>
+
+                {/* Add file tree rendering */}
+                {messageObject.fileTree && (
+                    <div className="mt-4">
+                        {Object.entries(messageObject.fileTree).map(
+                            ([fileName, fileData]) => (
+                                <div key={fileName} className="mb-4">
+                                    <h4 className="text-lg font-bold mb-2 text-gray-300">
+                                        {fileName}
+                                    </h4>
+                                    <div className="relative group">
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(
+                                                    fileData.file.contents
+                                                );
+                                            }}
+                                            className="absolute right-2 top-2 p-2 rounded bg-zinc-950 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                                            title="Copy code"
+                                        >
+                                            <RiFileCopyLine size={20} />
+                                        </button>
+                                        <SyntaxHighlighter
+                                            language="javascript"
+                                            style={vscDarkPlus}
+                                            customStyle={{
+                                                padding: "1rem",
+                                                borderRadius: "0.375rem",
+                                                fontSize: "0.875rem",
+                                            }}
+                                            className="rounded-md"
+                                        >
+                                            {fileData.file.contents}
+                                        </SyntaxHighlighter>
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </div>
+                )}
             </div>
         );
     };
@@ -217,16 +252,23 @@ export default function Project() {
         // socket initialization
         initializeSocket(projectId);
 
-        // get web container
         if (!webContainer) {
-            getWebContainer().then((container) => {
-                setWebContainer(container);
-            });
+            getWebContainer()
+                .then((container) => {
+                    console.log("entered container");
+                    setWebContainer(container);
+                    console.log("container started");
+                })
+                .catch((error) => {
+                    console.error("Error starting web container:", error);
+                });
         }
 
         receiveMessage("project-message", (data) => {
             const message = JSON.parse(data.message);
             console.log("data: ", message);
+
+            webContainer?.mount(message.fileTree);
 
             if (message && message.fileTree) {
                 setFileTree(message.fileTree);
@@ -249,7 +291,7 @@ export default function Project() {
                 console.error("Error fetching project:", error);
             }
         })();
-    }, [projectId, setProject]);
+    }, [projectId, setProject, webContainer, setWebContainer]);
 
     useEffect(() => {
         scrollToBottom();
@@ -359,7 +401,7 @@ export default function Project() {
                     {project?.title.toUpperCase()}
                 </h2>
                 <div className="flex">
-                    <div className="file-tree bg-gray-800 text-white p-4 rounded-l-lg shadow-inner border border-gray-700 md:h-[680px] w-1/4">
+                    <div className="file-tree bg-gray-800 text-white p-4 rounded-l-lg shadow-inner border border-gray-700 md:min-h-[680px] w-1/4">
                         <h3 className="text-lg font-bold mb-2 border-b border-gray-700 pb-1">
                             File Tree
                         </h3>
@@ -402,6 +444,7 @@ export default function Project() {
                                 </div>
                                 <pre className="rounded-md hljs max-h-[600px] overflow-y-auto bg-gray-950/50 text-md font-semibold p-4 text-zinc-200">
                                     <code
+                                        className="language-javascript"
                                         contentEditable={true}
                                         suppressContentEditableWarning
                                         onBlur={(e) => {
