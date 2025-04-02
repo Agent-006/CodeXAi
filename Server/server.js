@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 3000; // 3000 is the default port
 // Socket.io
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: "https://codexai-orpin.vercel.app/",
     },
 });
 
