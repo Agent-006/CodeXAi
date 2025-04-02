@@ -8,6 +8,9 @@ import {
     RiSubtractLine,
     RiFileCopyLine,
     RiSave3Fill,
+    RiPlayLargeLine,
+    RiStopLargeFill,
+    RiStopLargeLine,
 } from "@remixicon/react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -56,6 +59,10 @@ export default function Project() {
     const [fileTree, setFileTree] = useState({});
 
     const [webContainer, setWebContainer] = useState(null);
+
+    const [iframeUrl, setIframeUrl] = useState(null);
+
+    const [runProcess, setRunProcess] = useState(null);
 
     const handleButtonClick = () => {
         setShowMembers(true);
@@ -248,6 +255,18 @@ export default function Project() {
         );
     };
 
+    const saveFileTree = async (fileTree) => {
+        try {
+            const res = await Axios.put("/api/projects/update-filetree", {
+                projectId,
+                fileTree,
+            });
+            console.log(res.data);
+        } catch (error) {
+            console.error("Error saving file tree:", error);
+        }
+    };
+
     useEffect(() => {
         // socket initialization
         initializeSocket(projectId);
@@ -282,11 +301,8 @@ export default function Project() {
                 const res = await Axios.get(
                     `/api/projects/get-project/${projectId}`
                 );
-                console.log(res.data);
                 setProject(res.data.project[0]);
-                console.log(project);
-
-                console.log("projectID", projectId);
+                setFileTree(res.data.project[0].fileTree);
             } catch (error) {
                 console.error("Error fetching project:", error);
             }
@@ -396,11 +412,11 @@ export default function Project() {
                     </div>
                 </footer>
             </section>
-            <section className="code-container bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-[100vh] w-full md:w-3/4 p-8 shadow-lg">
+            <section className="code-container flex flex-col bg-gray-900 bg-opacity-60 backdrop-filter backdrop-blur-lg h-[100vh] w-full md:w-3/4 p-8 shadow-lg gap-1">
                 <h2 className="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">
                     {project?.title.toUpperCase()}
                 </h2>
-                <div className="flex">
+                <div className="flex gap-1">
                     <div className="file-tree bg-gray-800 text-white p-4 rounded-l-lg shadow-inner border border-gray-700 md:min-h-[680px] w-1/4">
                         <h3 className="text-lg font-bold mb-2 border-b border-gray-700 pb-1">
                             File Tree
@@ -425,22 +441,84 @@ export default function Project() {
                         {selectedFile && (
                             <div className="file-contents">
                                 <div>
-                                    <h3 className="flex justify-between items-center text-lg font-bold mb-2 border-b border-gray-700 pb-1">
-                                        {selectedFile}
-                                        <button
-                                            onClick={() => {
-                                                // Save the updated contents to the server or perform any save action
-                                                console.log(
-                                                    "File contents saved:",
-                                                    fileTree[selectedFile]?.file
-                                                        ?.contents
-                                                );
-                                            }}
-                                            className="mt-2 p-2 rounded text-white hover:text-gray-300 transition duration-300"
-                                        >
-                                            <RiSave3Fill />
-                                        </button>
-                                    </h3>
+                                    <div className="flex justify-between items-center text-lg font-bold mb-2 border-b border-gray-700 pb-1">
+                                        <div className="flex items-center gap-2">
+                                            {selectedFile}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={async () => {
+                                                    await webContainer.mount(
+                                                        fileTree
+                                                    );
+
+                                                    const installProcess =
+                                                        await webContainer.spawn(
+                                                            "npm",
+                                                            ["install"]
+                                                        );
+
+                                                    installProcess.output.pipeTo(
+                                                        new WritableStream({
+                                                            write(chunk) {
+                                                                console.log(
+                                                                    chunk.toString()
+                                                                );
+                                                            },
+                                                        })
+                                                    );
+
+                                                    if (runProcess) {
+                                                        runProcess.kill();
+                                                    }
+
+                                                    let tempRunProcess =
+                                                        await webContainer.spawn(
+                                                            "npm",
+                                                            ["start"]
+                                                        );
+
+                                                    tempRunProcess.output.pipeTo(
+                                                        new WritableStream({
+                                                            write(chunk) {
+                                                                console.log(
+                                                                    chunk.toString()
+                                                                );
+                                                            },
+                                                        })
+                                                    );
+
+                                                    setRunProcess(
+                                                        tempRunProcess
+                                                    );
+
+                                                    webContainer.on(
+                                                        "server-ready",
+                                                        (port, url) => {
+                                                            console.log(
+                                                                port,
+                                                                url
+                                                            );
+                                                            setIframeUrl(url);
+                                                        }
+                                                    );
+                                                }}
+                                                className="p-2 rounded text-white hover:text-gray-300 transition duration-300"
+                                            >
+                                                <RiPlayLargeLine />
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    if (runProcess) {
+                                                        runProcess.kill();
+                                                    }
+                                                }}
+                                                className="p-2 rounded text-white hover:text-gray-300 transition duration-300"
+                                            >
+                                                <RiStopLargeLine />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <pre className="rounded-md hljs max-h-[600px] overflow-y-auto bg-gray-950/50 text-md font-semibold p-4 text-zinc-200">
                                     <code
@@ -454,10 +532,17 @@ export default function Project() {
                                                 ...fileTree,
                                                 [selectedFile]: {
                                                     ...fileTree[selectedFile],
-                                                    contents: updatedContent,
+                                                    file: {
+                                                        ...fileTree[
+                                                            selectedFile
+                                                        ].file,
+                                                        contents:
+                                                            updatedContent,
+                                                    },
                                                 },
                                             };
                                             setFileTree(ft);
+                                            saveFileTree(ft);
                                         }}
                                         dangerouslySetInnerHTML={{
                                             __html: hljs.highlight(
@@ -477,6 +562,21 @@ export default function Project() {
                                 </pre>
                             </div>
                         )}
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center w-1/2 gap-1">
+                        <div className="address-bar bg-gray-900 text-white p-2 rounded-lg shadow-inner border border-gray-700 w-full">
+                            <input
+                                type="text"
+                                onChange={(e) => setIframeUrl(e.target.value)}
+                                value={iframeUrl}
+                                className="w-full bg-gray-900 text-white focus:outline-none"
+                            />
+                        </div>
+                        <iframe
+                            src={iframeUrl}
+                            className="w-full h-full rounded-lg shadow-lg border border-gray-700 bg-gray-100"
+                        ></iframe>
                     </div>
                 </div>
             </section>

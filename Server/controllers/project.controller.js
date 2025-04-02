@@ -5,6 +5,7 @@ import {
     createProject,
     getProjectById,
     getProjectsByUserId,
+    updateFileTree,
 } from "../services/project.service.js";
 
 export const createProjectController = async (req, res) => {
@@ -140,6 +141,44 @@ export const getProjectByIdController = async (req, res) => {
             error:
                 error.message ||
                 "Some error occurred while fetching the project",
+        });
+    }
+};
+
+// update file tree
+
+export const updateFileTreeController = async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            errors: errors.array(),
+        });
+    }
+
+    try {
+        const { projectId, fileTree } = req.body;
+
+        const project = await updateFileTree({
+            projectId,
+            fileTree,
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                message: "Project not found",
+            });
+        }
+
+        return res.status(200).json({
+            project,
+            message: "File tree updated successfully",
+        });
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).send({
+            error:
+                error.message || "Some error occurred while updating file tree",
         });
     }
 };

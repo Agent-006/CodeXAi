@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+//TODO: change the user schema
 const userSchema = new Schema({
     email: {
         type: String,

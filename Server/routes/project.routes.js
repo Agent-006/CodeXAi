@@ -5,6 +5,7 @@ import {
     createProjectController,
     getAllUserProjectsController,
     getProjectByIdController,
+    updateFileTreeController,
 } from "../controllers/project.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
@@ -36,5 +37,18 @@ router.put(
 );
 
 router.get("/get-project/:projectId", authUser, getProjectByIdController);
+
+router.put(
+    "/update-filetree",
+    authUser,
+    body("projectId").isString().withMessage("Project ID must be a string"),
+    body("fileTree").isObject().withMessage("File tree must be an object"),
+    body("fileTree")
+        .custom((fileTree) => {
+            return Object.keys(fileTree).length > 0;
+        })
+        .withMessage("File tree must not be empty"),
+    updateFileTreeController
+);
 
 export default router;
