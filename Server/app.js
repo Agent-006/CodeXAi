@@ -14,7 +14,7 @@ const app = express();
 
 app.use(
     cors({
-        origin: "https://codexai-orpin.vercel.app/",
+        origin: process.env.CLIENT_URL,
     })
 );
 
