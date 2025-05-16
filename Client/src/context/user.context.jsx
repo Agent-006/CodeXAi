@@ -22,7 +22,7 @@ export const UserProvider = ({ children }) => {
                 navigate("/");
             }
         })();
-    }, []);
+    }, [navigate]);
 
     return (
         <UserContext.Provider value={{ user, setUser }}>

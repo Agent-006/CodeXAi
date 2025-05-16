@@ -422,7 +422,7 @@ export default function Project() {
                             File Tree
                         </h3>
                         <ul className="space-y-2">
-                            {Object.entries(fileTree).map(
+                            {fileTree ? Object.entries(fileTree).map(
                                 ([fileName], index) => (
                                     <li
                                         key={index}
@@ -434,7 +434,7 @@ export default function Project() {
                                         {fileName}
                                     </li>
                                 )
-                            )}
+                            ) : []}
                         </ul>
                     </div>
                     <div className="code-editor bg-gray-900 text-white px-4 py-2 rounded-r-lg shadow-inner border border-gray-700 min-h-96 w-3/4 overflow-y-auto">

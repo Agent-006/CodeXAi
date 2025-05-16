@@ -12,11 +12,7 @@ dbConnect();
 
 const app = express();
 
-app.use(
-    cors({
-        origin: "https://codexai-orpin.vercel.app/",
-    })
-);
+app.use(cors());
 
 // log requests to the console
 app.use(morgan("dev"));
