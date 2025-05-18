@@ -35,6 +35,10 @@ app.use("/api/projects", projectRoutes);
 // use ai routes
 app.use("/api/xai", xaiRoutes);
 
+app.get("/", (req, res) => {
+    res.send("Server is running");
+});
+
 app.get("/api/", (req, res) => {
     res.send("Welcome to the server");
 });
