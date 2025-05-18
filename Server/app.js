@@ -13,13 +13,16 @@ dbConnect();
 const app = express();
 
 const corsOptions = {
-    origin: process.env.CLIENT_URL,
+    origin: [process.env.CLIENT_URL],
     method: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
 };
 
 app.use(cors(corsOptions));
+
+// enable pre-flight requests for all routes
+app.options("*", cors(corsOptions));
 
 // log requests to the console
 app.use(morgan("dev"));
