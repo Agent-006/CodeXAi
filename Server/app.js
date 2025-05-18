@@ -39,4 +39,8 @@ app.get("/api/", (req, res) => {
     res.send("Welcome to the server");
 });
 
+app.get("/api/healthcheck", (req, res) => {
+    res.status(200).json({ status: "healthy" });
+});
+
 export default app;
