@@ -12,12 +12,14 @@ dbConnect();
 
 const app = express();
 
-app.use(
-    cors({
-        origin: process.env.CLIENT_URL,
-        credentials: true,
-    })
-);
+const corsOptions = {
+    origin: process.env.CLIENT_URL,
+    method: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // log requests to the console
 app.use(morgan("dev"));

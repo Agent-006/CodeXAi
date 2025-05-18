@@ -29,7 +29,7 @@ export const UserProvider = ({ children }) => {
                 navigate("/");
             }
         })();
-    }, [navigate, location]);
+    }, [location, navigate]);
 
     return (
         <UserContext.Provider value={{ user, setUser }}>
