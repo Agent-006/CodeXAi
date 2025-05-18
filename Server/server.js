@@ -16,13 +16,21 @@ const server = http.createServer(app); // create a server
 
 const PORT = process.env.PORT || 3000; // 3000 is the default port
 
+const allowedOrigins = process.env.CLIENT_URL.split(",");
+
 // Socket.io
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL,
+        origin:
+            process.env.VERCEL_ENV === "production"
+                ? allowedOrigins
+                : allowedOrigins[1],
         methods: ["GET", "POST"],
         credentials: true,
+        allowedHeaders: ["Authorization", "Content-Type"],
     },
+    transports: ["websocket", "polling"], // Add this for Vercel compatibility
+    path: "/socket.io/", // Explicit path helps with Vercel routing
 });
 
 // middleware
@@ -116,6 +124,14 @@ io.on("connection", async (socket) => {
         socket.leave(socket.roomId);
     });
 });
+
+if (process.env.VERCEL) {
+    // Vercel-specific optimizations
+    io.engine.on("initial_headers", (headers, req) => {
+        headers["Access-Control-Allow-Origin"] = process.env.CLIENT_URL;
+        headers["Access-Control-Allow-Credentials"] = "true";
+    });
+}
 
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
