@@ -23,7 +23,7 @@ const io = new Server(server, {
     cors: {
         origin:
             process.env.VERCEL_ENV === "production"
-                ? allowedOrigins
+                ? [allowedOrigins[0], allowedOrigins[1]]
                 : allowedOrigins[1],
         methods: ["GET", "POST"],
         credentials: true,
