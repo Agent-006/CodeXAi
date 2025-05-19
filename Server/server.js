@@ -16,22 +16,37 @@ const server = http.createServer(app); // create a server
 
 const PORT = process.env.PORT || 3000; // 3000 is the default port
 
-const allowedOrigins = process.env.CLIENT_URL.split(",");
+const allowedOrigins = process.env.CLIENT_URL.split(",").map((origin) =>
+    origin.trim()
+);
 
 // Socket.io
 const io = new Server(server, {
     cors: {
-        origin:
-            process.env.VERCEL_ENV === "production"
-                ? [allowedOrigins[0], allowedOrigins[1]]
-                : allowedOrigins[1],
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         methods: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ["Authorization", "Content-Type"],
     },
-    transports: ["websocket", "polling"], // Add this for Vercel compatibility
-    path: "/socket.io/", // Explicit path helps with Vercel routing
+    transports: ["websocket", "polling"],
+    path: "/socket.io/",
 });
+
+if (process.env.VERCEL_ENV === "production") {
+    // Enable compression and disable perMessageDeflate for better performance
+    io.engine.opts.perMessageDeflate = false;
+    io.engine.opts.compression = true;
+
+    // More aggressive timeouts for production
+    io.engine.opts.pingTimeout = 60000;
+    io.engine.opts.pingInterval = 25000;
+}
 
 // middleware
 io.use(async (socket, next) => {
