@@ -3,25 +3,12 @@
     "builds": [
         {
             "src": "server.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": ["dist/**"]
-            }
+            "use": "@vercel/node"
         }
     ],
     "routes": [
         {
             "src": "/socket.io/.*",
-            "dest": "server.js",
-            "headers": {
-                "Access-Control-Allow-Origin": "{env:CLIENT_URL}",
-                "Access-Control-Allow-Methods": "GET,POST",
-                "Access-Control-Allow-Headers": "Authorization, Content-Type",
-                "Access-Control-Allow-Credentials": "true"
-            }
-        },
-        {
-            "src": "/api/.*",
             "dest": "server.js"
         }
     ]

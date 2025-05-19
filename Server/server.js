@@ -125,14 +125,6 @@ io.on("connection", async (socket) => {
     });
 });
 
-if (process.env.VERCEL) {
-    // Vercel-specific optimizations
-    io.engine.on("initial_headers", (headers, req) => {
-        headers["Access-Control-Allow-Origin"] = process.env.CLIENT_URL;
-        headers["Access-Control-Allow-Credentials"] = "true";
-    });
-}
-
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
