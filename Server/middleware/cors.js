@@ -1,5 +1,5 @@
 // middleware/cors.js
-const allowedOrigins = process.env.CLIENT_URL.split(",").map((origin) =>
+export const allowedOrigins = process.env.CLIENT_URL.split(",").map((origin) =>
     origin.trim()
 );
 

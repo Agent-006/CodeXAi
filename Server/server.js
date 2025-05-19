@@ -11,25 +11,16 @@ import mongoose from "mongoose";
 import Project from "./models/project.model.js";
 import { getUserById } from "./services/user.service.js";
 import { XaiServiceGenerateResult } from "./services/xai.service.js";
+import { allowedOrigins } from "./middleware/cors.js";
 
 const server = http.createServer(app); // create a server
 
 const PORT = process.env.PORT || 3000; // 3000 is the default port
 
-const allowedOrigins = process.env.CLIENT_URL.split(",").map((origin) =>
-    origin.trim()
-);
-
 // Socket.io
 const io = new Server(server, {
     cors: {
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error("Not allowed by CORS"));
-            }
-        },
+        origin: allowedOrigins,
         methods: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ["Authorization", "Content-Type"],
